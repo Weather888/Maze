@@ -12,7 +12,7 @@ namespace Maze
 {
     public partial class Form1 : Form
     {
-        
+        Random rnd = new Random();
         // Размеры поля и размер клетки в пикселях
         public static int width = 10, height = 10, k = 30;
         public int[,] Map;// массив для хранения карты
@@ -70,7 +70,7 @@ namespace Maze
                             gr.DrawRectangle(Pens.Black, i * k, j * k, k, k);
                             break;
                         case -2:
-                            gr.FillRectangle(Brushes.Red, i * k, j * k, k, k); // Рисуем в этом месте квадратик
+                            gr.FillRectangle(Brushes.CadetBlue, i * k, j * k, k, k); // Рисуем в этом месте квадратик
                             gr.DrawRectangle(Pens.Black, i * k, j * k, k, k);
                             break;
                         case -3:
@@ -81,6 +81,69 @@ namespace Maze
 
             pictureBox1.Image = bitfield;
         }
+
+
+
+        public void GeneratePlaces()
+        {
+            int x1 = 0, y1 = 0;
+            do
+            {
+                x1 = 1 + rnd.Next(height);//начальные координаты клетки
+                y1 = 1 + rnd.Next(width);
+            } while (Map[x1, y1] != 0);//ищем пока клетка занята, как только клетка свободна - она является стартовой
+            Map[x1, y1] = 2;
+            int x2 = 0, y2 = 0;
+            do
+            {
+                x2 = 1 + rnd.Next(height);
+                y2 = 1 + rnd.Next(width);
+            } while (Map[x2, y2] != 0);
+            //Map[x2, y2] = 3;
+
+            int x, y;
+            Queue q = new Queue();
+            q.Enqueue(x1); q.Enqueue(y1);
+            // пока очередь не пуста
+            while (q.Count > 0)
+            {
+                // извлекаем координаты клетки из очереди
+                x = Convert.ToInt32(q.Dequeue());
+                y = Convert.ToInt32(q.Dequeue());
+                // для всех соседей
+                for (int i = 0; i < 4; i++)
+                    // если по ходу соседа с номером i
+                    // клетка равна 0 (не стена и не пометка)
+                    if (Map[x + dx[i], y + dy[i]] == 0)
+                    {
+                        // то мы пришли сюда на ход позже
+                        // пометим количеством ходов
+                        Map[x + dx[i], y + dy[i]] = Map[x, y] + 1;
+                        // и поместим в очередь для обработки
+                        q.Enqueue(x + dx[i]);
+                        q.Enqueue(y + dy[i]);
+                    }
+            }
+
+
+            x = x2; y = y2;
+            while (x != x1 || y != y1)
+            {
+                int z = 0;
+                for (int i = 0; i < 4; i++)
+                    if (Map[x + dx[i], y + dy[i]] == Map[x, y] - 1)
+                    {
+                        z = i;
+                        break;
+                    }
+                Map[x, y] = -1;
+                x += dx[z];
+                y += dy[z];
+            }
+
+            Map[x1, y1] = -2;
+            Map[x2, y2] = -3;
+        }
         public Form1()
         {
             InitializeComponent();
@@ -88,9 +151,12 @@ namespace Maze
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            // задать картинку для полотна
+            gr = Graphics.FromImage(bitfield);
             LoadMap();
-            Width = (width + 2) * k;
-            Height = (height + 2) * k;
+            Width = (width + 2) * (k + 1) + 4;
+            Height = (height + 2) * (k + 3) + 4;
+            GeneratePlaces();
             ShowMap();
         }
     }
