@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -96,7 +97,7 @@ namespace Maze
             int x2 = 0, y2 = 0;
             do
             {
-                x2 = 1 + rnd.Next(height);
+                x2 = 1 + rnd.Next(height);//конечная клетка
                 y2 = 1 + rnd.Next(width);
             } while (Map[x2, y2] != 0);
             //Map[x2, y2] = 3;
@@ -104,7 +105,7 @@ namespace Maze
             int x, y;
             Queue q = new Queue();
             q.Enqueue(x1); q.Enqueue(y1);
-            // пока очередь не пуста
+            // пока очередь не пуста (поиск в ширину)
             while (q.Count > 0)
             {
                 // извлекаем координаты клетки из очереди
@@ -126,23 +127,23 @@ namespace Maze
             }
 
 
-            x = x2; y = y2;
-            while (x != x1 || y != y1)
+            x = x2; y = y2;//ставим текущие координаты на конечную точку
+            while (x != x1 || y != y1)//пока не наудем стартовую точку
             {
                 int z = 0;
                 for (int i = 0; i < 4; i++)
-                    if (Map[x + dx[i], y + dy[i]] == Map[x, y] - 1)
+                    if (Map[x + dx[i], y + dy[i]] == Map[x, y] - 1)//смотрим по сторонам, где у нас есть число на единичку меньше
                     {
                         z = i;
                         break;
                     }
-                Map[x, y] = -1;
-                x += dx[z];
+                Map[x, y] = -1;//нарисуем -1 в том месте где мы были
+                x += dx[z];//сместимся
                 y += dy[z];
             }
 
             Map[x1, y1] = -2;
-            Map[x2, y2] = -3;
+            Map[x2, y2] = -3;//конечная точка
         }
         public Form1()
         {
